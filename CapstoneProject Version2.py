@@ -27,6 +27,14 @@ from keras.preprocessing.image import img_to_array
 
                                 #FUNCTION MODULES Start#
 
+# declaration for CNN model
+                                
+batch_size = 32
+num_classes = 2
+epochs = 100
+data_augmentation = True
+num_predictions = 20
+
 ############canny edge detection############
  
 def auto_canny(image, sigma=0.33):
@@ -44,7 +52,7 @@ def auto_canny(image, sigma=0.33):
 ##############Key Frames thresold ##########################
 def KeyFrameThreshold(VideoPath):
 
-
+    print('calculating key frame thresold.....')
     fgbg = cv2.createBackgroundSubtractorMOG2(history=20, varThreshold=25, detectShadows=True)
     cap = cv2.VideoCapture(VideoPath)
     # Read the first frame.
@@ -89,6 +97,8 @@ def KeyFrameThreshold(VideoPath):
     min_p_frame_thresh = meanstorediff-1.5*stdstorediff
     max_p_frame_thresh = meanstorediff+1.5*stdstorediff 
     
+    print('completed calculating key frame thresold.')
+    
     return min_p_frame_thresh,max_p_frame_thresh
 
 #Testing
@@ -101,6 +111,7 @@ def KeyFrameThreshold(VideoPath):
             
 def KeyFrame(VideoPath,KeyFrameFolder,minThreshold,maxThreshold):
 
+    print('extracting key frames.....')
     cap = cv2.VideoCapture(VideoPath)
     # Read the first frame.
     ret, prev_frame = cap.read()
@@ -135,7 +146,7 @@ def KeyFrame(VideoPath,KeyFrameFolder,minThreshold,maxThreshold):
                 cv2.imwrite(os.path.join(vfolder,"frame{:d}.jpg".format(count)), curr_frame) 
                 #cv2.imshow('Original',curr_frame) 
             prev_edges = curr_edges    
-
+    print('completed extracting key frames.')    
     return count
 
 
@@ -272,11 +283,7 @@ def TestDataPrep(TestDataPath):
 
 def YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,save_dir,model_name):
     
-    batch_size = 32
-    num_classes = 13
-    epochs = 100
-    data_augmentation = True
-    num_predictions = 20
+
     
     print('train samples',train_data.shape)
     print('test samples',test_data.shape)
@@ -394,26 +401,57 @@ def YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,s
 
 #################### run the model####################
 
+### takes 3-4 hrs to complete this.
+#def runmodel():
+vlist = ["C:\\SAProject\\SuryaNamskar\\yoga1.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga2.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga3.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga4.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga5.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga6.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga7.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga8.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga9.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga10.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga11.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga12.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga13.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga14.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga15.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga16.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga17.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga18.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga19.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga20.mp4",
+         "C:\\SAProject\\SuryaNamskar\\yoga21.mp4"
+         ]
+vlistfolder = ["yoga1","yoga2","yoga3","yoga4","yoga5","yoga6","yoga7","yoga8","yoga9","yoga10","yoga11",
+               "yoga12","yoga13","yoga14","yoga15","yoga16","yoga17","yoga18","yoga19","yoga20","yoga21"]
+
 #Testing
-x,y = KeyFrameThreshold("C:\SAProject\YogaPoses.mp4")
-vct = KeyFrame("C:\SAProject\YogaPoses.mp4","1610",x,y)
 
-print('minimum threshold' , x)
-print('maximum threshold',y)
-print('number of key frames extracted',vct)  
+for i in range(0,21):
+    x,y = KeyFrameThreshold(vlist[i])
+    vct = KeyFrame(vlist[i],vlistfolder[i],x,y)
 
+    print('minimum threshold' , x)
+    print('maximum threshold',y)
+    print('number of key frames extracted',vct)  
+    
+###############################################################################
+    
+# clustering frames
 trainframe = FrameClustering("C:\\SAProject\\Vid\\train")
 testframe = FrameClustering("C:\\SAProject\\Vid\\test")
 trainframe.shape[0]
+############################
+
 
 # testing
 train_data,train_labels_one_hot = TrainDataPrep("C:\\SAProject\\Vid\\train") 
 # testing
 test_data,test_labels_one_hot = TestDataPrep("C:\\SAProject\\Vid\\test")  
 
-x,y = YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,"CNNModel","YogaPose.h5")
-
-
-
+x,y = YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,"testCNNModel","testYogaPose.h5")
 
 
