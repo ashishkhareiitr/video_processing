@@ -80,7 +80,7 @@ def KeyFrameThreshold(VideoPath):
             non_zero_count = np.count_nonzero(diff)
             storediff.append(non_zero_count)
             #icount = icount +1
-            print(non_zero_count)
+            #print(non_zero_count)
             prev_edges = curr_edges
                            
             #print(diff)
@@ -141,7 +141,7 @@ def KeyFrame(VideoPath,KeyFrameFolder,minThreshold,maxThreshold):
             
             diff = cv2.absdiff(curr_edges, prev_edges)
             non_zero_count = np.count_nonzero(diff)
-            print(non_zero_count)
+            #print(non_zero_count)
             
             if  non_zero_count > maxThreshold:
                 print('Writing Key-Frame...')
@@ -379,7 +379,7 @@ def YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,s
         #steps_per_epoch should be equivalent to the total number of samples divided by the batch size.
         model.fit_generator(datagen.flow(train_data, train_labels_one_hot,
                                          batch_size=batch_size),
-                            epochs=epochs,steps_per_epoch=20,
+                            epochs=epochs,steps_per_epoch=2000,
                             validation_data=(test_data, test_labels_one_hot))
     
     # Save model and weights
@@ -449,13 +449,16 @@ testframe = FrameClustering("C:\\SAProject\\Vid\\test")
 trainframe.shape[0]
 ############################
 
+xx,yy = KeyFrameThreshold("C:\\SAProject\\SuryaNamskar\\yoga1.mp4")
+vctt = KeyFrame("C:\\SAProject\\SuryaNamskar\\yoga1.mp4","testyoga",xx,yy)
+
 
 # testing
 train_data,train_labels_one_hot = TrainDataPrep("C:\\SAProject\\Vid\\train") 
 # testing
 test_data,test_labels_one_hot = TestDataPrep("C:\\SAProject\\Vid\\test")  
 
-x,y = YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,"test4CNNModel","test4YogaPose.h5")
+x,y = YogaCNNModel(train_data,train_labels_one_hot,test_data,test_labels_one_hot,"test6CNNModel","test6YogaPose.h5")
 
 
 ##################### model to predict on test dataset##############################
@@ -467,11 +470,11 @@ def PredictClass(modelPath,validationImagesPath):
     img_width, img_height = 28, 28
     
     # load the model we saved
-    model = load_model('C:\\SAProject\\Vid\\test4YogaPose.h5')
+    model = load_model('C:\\SAProject\\Vid\\test6YogaPose.h5')
     model.compile(loss='binary_crossentropy',optimizer='rmsprop',metrics=['accuracy'])
     
     # predicting images
-    img = image.load_img('C:\\SAProject\\Vid\\test\\1\\frame128.jpg', target_size=(img_width, img_height))
+    img = image.load_img('C:\\SAProject\\Vid\\test\\1\\frame236.jpg', target_size=(img_width, img_height))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     
@@ -480,23 +483,45 @@ def PredictClass(modelPath,validationImagesPath):
     print(classes)
     
     # predicting multiple images at once
-    img = image.load_img('test2.jpg', target_size=(img_width, img_height))
-    y = image.img_to_array(img)
-    y = np.expand_dims(y, axis=0)
-    
-    # pass the list of multiple images np.vstack()
-    images = np.vstack([x, y])
-    classes = model.predict_classes(images, batch_size=10)
-    
-    # print the classes, the images belong to
-    print(classes)
-    print(classes[0])
-    print(classes[0][0])
+#    img = image.load_img('test2.jpg', target_size=(img_width, img_height))
+#    y = image.img_to_array(img)
+#    y = np.expand_dims(y, axis=0)
+#    
+#    # pass the list of multiple images np.vstack()
+#    images = np.vstack([x, y])
+#    classes = model.predict_classes(images, batch_size=10)
+#    
+#    # print the classes, the images belong to
+#    print(classes)
+#    print(classes[0])
+#    print(classes[0][0])
     
     return classes
 
+################################# time extraction##################################33
 
+def timecapture():    
+    import cv2
+    
+    cap = cv2.VideoCapture('vancouver2.mp4')
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    
+    timestamps = [cap.get(cv2.CAP_PROP_POS_MSEC)]
+    calc_timestamps = [0.0]
+    
+    while(cap.isOpened()):
+        frame_exists, curr_frame = cap.read()
+        if frame_exists:
+            timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
+            calc_timestamps.append(calc_timestamps[-1] + 1000/fps)
+        else:
+            break
+    
+    cap.release()
+    
+    for i, (ts, cts) in enumerate(zip(timestamps, calc_timestamps)):
+        print('Frame %d difference:'%i, abs(ts - cts))
 
-
+return ts
 
 
